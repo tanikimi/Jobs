@@ -1,34 +1,26 @@
-//
-//  CompanyDetailView.swift
-//  Jobs
-//
-//  Created by 谷川 木穣 on 2026/03/08.
-//
-
 import SwiftUI
 
 struct CompanyDetailView: View {
-    let company: Company
-    
+    @Binding var company: Company
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16){
-            Text(company.name)
-                .font(.largeTitle)
-                .bold()
-            
-            Text(company.status.rawValue)
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            
-            Divider()
-            
-            Text("メモ")
-                .font(.headline)
-            Text(company.memo.isEmpty ? "メモなし" : company.memo)
-                .foregroundStyle(company.memo.isEmpty ? .secondary : .primary)
-            
-            Spacer()
+        Form {
+            Section("基本情報") {
+                TextField("企業名", text: $company.name)
+                Picker("ステータス", selection: $company.status) {
+                    ForEach(Company.Status.allCases, id: \.self) { status in
+                        Text(status.rawValue).tag(status)
+                    }
+                }
+                TextField("公式サイトURL", text: $company.websiteURL)
+            }
+
+            Section("メモ") {
+                TextEditor(text: $company.memo)
+                    .frame(minHeight: 100)
+            }
         }
-        .padding(24)
+        .formStyle(.grouped)
+        .navigationTitle(company.name)
     }
 }
