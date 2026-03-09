@@ -36,6 +36,7 @@ struct CompanyDetailView: View {
 
                 Form {
                     basicInfoSection()
+                    linksSection()
                     scheduleSection()
                 }
                 .formStyle(.grouped)
@@ -128,6 +129,49 @@ struct CompanyDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 4)
                 }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func linksSection() -> some View {
+        Section("リンク") {
+            if company.links.isEmpty && !isEditing {
+                Text("リンクなし")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach($company.links) { $link in
+                    if isEditing {
+                        Section {
+                            TextField("タイトル", text: $link.title)
+                            TextField("URL", text: $link.url)
+                            Button(role: .destructive) {
+                                company.links.removeAll { $0.id == link.id }
+                            } label: {
+                                Label("リンクを削除", systemImage: "trash")
+                            }
+                        }
+                    } else {
+                        LabeledContent(link.title.isEmpty ? "リンク" : link.title) {
+                            if let url = URL(string: link.url), !link.url.isEmpty {
+                                Link(link.url, destination: url)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            } else {
+                                Text("未設定")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if isEditing {
+            Button {
+                company.links.append(Company.Link(title: "", url: ""))
+            } label: {
+                Label("リンクを追加", systemImage: "plus")
             }
         }
     }
