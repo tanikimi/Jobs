@@ -7,8 +7,10 @@
 
 import Foundation
 
+
 struct Company: Identifiable, Codable, Hashable {
     var id = UUID()
+    var updatedAt: Date = Date.distantPast
     var name: String
     var status: Status
     var favoriteLevel: Int = 0

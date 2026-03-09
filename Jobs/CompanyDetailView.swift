@@ -68,6 +68,7 @@ struct CompanyDetailView: View {
                             isNameFocused = true
                             previousURL = company.websiteURL
                         } else {
+                            company.updatedAt = Date.now
                             if previousURL != company.websiteURL {
                                 store.faviconCache.removeValue(forKey: previousURL)
                                 Task {

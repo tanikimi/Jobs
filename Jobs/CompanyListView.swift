@@ -11,13 +11,15 @@ struct CompanyListView: View {
     @AppStorage("sortAscending") private var sortAscending: Bool = true
 
     enum SortKey: String, CaseIterable {
-        case name     = "企業名"
-        case favorite = "志望度"
+        case name      = "企業名"
+        case favorite  = "志望度"
+        case updatedAt = "編集日時"
 
         var icon: String {
             switch self {
-            case .name:     return "textformat"
-            case .favorite: return "star"
+            case .name:      return "textformat"
+            case .favorite:  return "star"
+            case .updatedAt: return "clock"
             }
         }
     }
@@ -39,6 +41,8 @@ struct CompanyListView: View {
             result.sort { sortAscending ? $0.name < $1.name : $0.name > $1.name }
         case .favorite:
             result.sort { sortAscending ? $0.favoriteLevel < $1.favoriteLevel : $0.favoriteLevel > $1.favoriteLevel }
+        case .updatedAt:
+            result.sort { sortAscending ? $0.updatedAt < $1.updatedAt : $0.updatedAt > $1.updatedAt }
         }
         return result
     }
