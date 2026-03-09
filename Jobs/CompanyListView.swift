@@ -38,15 +38,32 @@ struct CompanyListView: View {
         return result
     }
 
+    var groupedCompanies: [(date: Date, companies: [Company])] {
+        var dict: [Date: [Company]] = [:]
+        for company in filteredCompanies {
+            for event in company.events {
+                let day = Calendar.current.startOfDay(for: event.date)
+                dict[day, default: []].append(company)
+            }
+        }
+        return dict
+            .map { (date: $0.key, companies: $0.value) }
+            .sorted { $0.date < $1.date }
+    }
+
     var body: some View {
         List(selection: $selectedCompany) {
             if isGrouped {
-                ForEach(groupedCompanies, id: \.date) { group in
-                    Section(group.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ja_JP")))) {
-                        ForEach(group.companies) { company in
+                ForEach(Array(groupedCompanies.enumerated()), id: \.element.date) { groupIndex, group in
+                    Section {
+                        ForEach(Array(group.companies.enumerated()), id: \.element.id) { index, company in
                             companyRow(company)
+                                .listRowSeparator(.hidden)
                         }
+                    } header: {
+                        Text(group.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ja_JP"))))
                     }
+                    .listSectionSeparator(.hidden)
                 }
             } else {
                 ForEach(filteredCompanies) { company in
@@ -54,6 +71,8 @@ struct CompanyListView: View {
                 }
             }
         }
+        .id(isGrouped)
+        .listStyle(.inset)
         .searchable(text: $searchText, prompt: "企業名で検索")
         .navigationTitle("企業リスト")
         .toolbar {
@@ -94,19 +113,6 @@ struct CompanyListView: View {
                 }
             }
         }
-    }
-
-    var groupedCompanies: [(date: Date, companies: [Company])] {
-        var dict: [Date: [Company]] = [:]
-        for company in filteredCompanies {
-            for event in company.events {
-                let day = Calendar.current.startOfDay(for: event.date)
-                dict[day, default: []].append(company)
-            }
-        }
-        return dict
-            .map { (date: $0.key, companies: $0.value) }
-            .sorted { $0.date < $1.date }
     }
 
     @ViewBuilder
