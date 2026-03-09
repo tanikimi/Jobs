@@ -1,0 +1,66 @@
+import SwiftUI
+
+struct SidebarView: View {
+    @Binding var selection: SidebarItem
+    let store: CompanyStore
+
+    var body: some View {
+        List(selection: $selection) {
+            Section("Jobs") {
+                HStack {
+                    Label("すべて", systemImage: "tray.2")
+                    Spacer()
+                    badge(store.companies.count)
+                }
+                .tag(SidebarItem.all)
+
+                HStack {
+                    Label("日時設定あり", systemImage: "calendar")
+                    Spacer()
+                    badge(store.companies.filter { !$0.events.isEmpty }.count)
+                }
+                .tag(SidebarItem.hasEvents)
+
+                HStack {
+                    Label("最近削除した項目", systemImage: "trash")
+                    Spacer()
+                    badge(store.trashedCompanies.count)
+                }
+                .tag(SidebarItem.trash)
+            }
+
+            Section("ステータス") {
+                ForEach(Company.Status.allCases, id: \.self) { status in
+                    HStack {
+                        Label(status.rawValue, systemImage: status.icon)
+                        Spacer()
+                        badge(store.companies.filter { $0.status == status }.count)
+                    }
+                    .tag(SidebarItem.status(status))
+                }
+            }
+        }
+        .navigationTitle("Jobs")
+    }
+
+    @ViewBuilder
+    private func badge(_ count: Int) -> some View {
+        if count > 0 {
+            Text("\(count)")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.secondary.opacity(0.2))
+                .clipShape(Capsule())
+        }
+    }
+}
+
+enum SidebarItem: Hashable {
+    case all
+    case hasEvents
+    case status(Company.Status)
+    case trash
+}
