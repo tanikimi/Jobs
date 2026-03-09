@@ -11,6 +11,7 @@ struct Company: Identifiable, Codable, Hashable {
     var id = UUID()
     var name: String
     var status: Status
+    var favoriteLevel: Int = 0
     var websiteURL: String
     var memo: String
     var events: [Event]
@@ -19,14 +20,14 @@ struct Company: Identifiable, Codable, Hashable {
     enum Status: String, Codable, CaseIterable, Hashable {
         case interested = "気になる"
         case applied    = "書類提出"
-        case interview  = "面接中"
+        case interview  = "選考中"
         case offered    = "内定"
         case rejected   = "不合格"
         case declined   = "辞退"
 
         var icon: String {
             switch self {
-            case .interested: return "star"
+            case .interested: return "eyes"
             case .applied:    return "doc"
             case .interview:  return "person.2"
             case .offered:    return "checkmark.seal"

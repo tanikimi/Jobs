@@ -21,7 +21,7 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            SidebarView(selection: $sidebarSelection)
+            SidebarView(selection: $sidebarSelection, store: store)
         } content: {
             if sidebarSelection == .trash {
                 TrashListView(
@@ -45,9 +45,17 @@ struct ContentView: View {
                     isGrouped: sidebarSelection == .hasEvents,
                     selectedCompany: $selectedCompany,
                     onAdd: {
+                        // サイドバーの選択からデフォルトステータスを決定
+                        let defaultStatus: Company.Status
+                        if case .status(let status) = sidebarSelection {
+                            defaultStatus = status
+                        } else {
+                            defaultStatus = .interested
+                        }
+
                         let newCompany = Company(
                             name: "",
-                            status: .interested,
+                            status: defaultStatus,
                             websiteURL: "",
                             memo: "",
                             events: []
@@ -68,8 +76,13 @@ struct ContentView: View {
             if let index = store.companies.firstIndex(where: { $0.id == selectedCompany?.id }) {
                 CompanyDetailView(company: $store.companies[index], isEditing: isNewCompany)
                     .onAppear { isNewCompany = false }
+                    .id(selectedCompany?.id)
             } else {
-                ContentUnavailableView("企業を選択してください", systemImage: "building.2")
+                ContentUnavailableView(
+                    "選択された項目なし",
+                    systemImage: "person.text.rectangle.fill",
+                    description: Text("就活の進捗情報を管理できます")
+                )
                     .toolbar {
                         ToolbarItem(placement: .primaryAction) {
                             Button("編集") {}
