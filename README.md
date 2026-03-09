@@ -1,3 +1,3 @@
-## Jobs is HERE!
+## まとめましょ。
 
-JobsはmacOS Nativeな就活進捗管理Appです
+JobsはmacOS Nativeな就活進捗管理Appです。
