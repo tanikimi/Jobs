@@ -11,12 +11,33 @@ struct ContentView: View {
         case .all:
             return store.companies
         case .hasEvents:
-            return store.companies.filter { !$0.events.isEmpty }
+            return store.companies.filter { company in
+                company.events.contains { !$0.isCompleted }
+            }
         case .status(let status):
             return store.companies.filter { $0.status == status }
         case .trash:
             return store.trashedCompanies
         }
+    }
+
+    func addCompany() {
+        let defaultStatus: Company.Status
+        if case .status(let status) = sidebarSelection {
+            defaultStatus = status
+        } else {
+            defaultStatus = .interested
+        }
+        let newCompany = Company(
+            name: "",
+            status: defaultStatus,
+            websiteURL: "",
+            memo: "",
+            events: []
+        )
+        store.add(newCompany)
+        selectedCompany = newCompany
+        isNewCompany = true
     }
 
     var body: some View {
@@ -44,32 +65,14 @@ struct ContentView: View {
                     companies: filteredCompanies,
                     isGrouped: sidebarSelection == .hasEvents,
                     selectedCompany: $selectedCompany,
-                    onAdd: {
-                        // サイドバーの選択からデフォルトステータスを決定
-                        let defaultStatus: Company.Status
-                        if case .status(let status) = sidebarSelection {
-                            defaultStatus = status
-                        } else {
-                            defaultStatus = .interested
-                        }
-
-                        let newCompany = Company(
-                            name: "",
-                            status: defaultStatus,
-                            websiteURL: "",
-                            memo: "",
-                            events: []
-                        )
-                        store.add(newCompany)
-                        selectedCompany = newCompany
-                        isNewCompany = true
-                    },
+                    onAdd: addCompany,
                     onDelete: { company in
                         store.delete(company)
                         if selectedCompany == company {
                             selectedCompany = nil
                         }
-                    }
+                    },
+                    sidebarSelection: sidebarSelection
                 )
             }
         } detail: {
@@ -83,13 +86,17 @@ struct ContentView: View {
                     systemImage: "person.text.rectangle.fill",
                     description: Text("就活の進捗情報を管理できます")
                 )
-                    .toolbar {
-                        ToolbarItem(placement: .primaryAction) {
-                            Button("編集") {}
-                                .disabled(true)
-                        }
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("編集") {}
+                            .disabled(true)
                     }
+                }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .addCompany)) { _ in
+            addCompany()
+        }
+        .environment(store)
     }
 }

@@ -6,6 +6,8 @@ struct CompanyDetailView: View {
     @FocusState private var isNameFocused: Bool
     @State private var eventKit = EventKitManager()
     @State private var addedEventIDs: Set<UUID> = []
+    @State private var previousURL: String = ""
+    @Environment(CompanyStore.self) private var store
 
     init(company: Binding<Company>, isEditing: Bool = false) {
         self._company = company
@@ -36,6 +38,7 @@ struct CompanyDetailView: View {
 
                 Form {
                     basicInfoSection()
+                    linksSection()
                     scheduleSection()
                 }
                 .formStyle(.grouped)
@@ -51,16 +54,27 @@ struct CompanyDetailView: View {
         .onChange(of: company.id) {
             isEditing = false
         }
+        .onAppear {
+            previousURL = company.websiteURL
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(isEditing ? "完了" : "編集") {
                     if isEditing && company.name.trimmingCharacters(in: .whitespaces).isEmpty {
-                        // 名前が空なら何もせず編集モードを維持
                         isNameFocused = true
                     } else {
                         isEditing.toggle()
                         if isEditing {
                             isNameFocused = true
+                            previousURL = company.websiteURL
+                        } else {
+                            company.updatedAt = Date.now
+                            if previousURL != company.websiteURL {
+                                store.faviconCache.removeValue(forKey: previousURL)
+                                Task {
+                                    await store.fetchFavicon(for: company.websiteURL)
+                                }
+                            }
                         }
                     }
                 }
@@ -127,7 +141,51 @@ struct CompanyDetailView: View {
                     Text(.init(company.memo))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 4)
+                        .foregroundStyle(.secondary)
                 }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func linksSection() -> some View {
+        Section("リンク") {
+            if company.links.isEmpty && !isEditing {
+                Text("リンクなし")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach($company.links) { $link in
+                    if isEditing {
+                        Section {
+                            TextField("タイトル", text: $link.title)
+                            TextField("URL", text: $link.url)
+                            Button(role: .destructive) {
+                                company.links.removeAll { $0.id == link.id }
+                            } label: {
+                                Label("リンクを削除", systemImage: "trash")
+                            }
+                        }
+                    } else {
+                        LabeledContent(link.title.isEmpty ? "リンク" : link.title) {
+                            if let url = URL(string: link.url), !link.url.isEmpty {
+                                Link(link.url, destination: url)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            } else {
+                                Text("未設定")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if isEditing {
+            Button {
+                company.links.append(Company.Link(title: "", url: ""))
+            } label: {
+                Label("リンクを追加", systemImage: "plus")
             }
         }
     }
@@ -152,10 +210,20 @@ struct CompanyDetailView: View {
                 }
             }
         } else {
-            Section {
+            HStack(alignment: .center, spacing: 12) {
+                Button {
+                    event.wrappedValue.isCompleted.toggle()
+                } label: {
+                    Image(systemName: event.wrappedValue.isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.title2)
+                        .foregroundStyle(event.wrappedValue.isCompleted ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                }
+                .buttonStyle(.plain)
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(event.wrappedValue.title.isEmpty ? "タイトルなし" : event.wrappedValue.title)
                         .font(.headline)
+                        .foregroundStyle(event.wrappedValue.isCompleted ? .secondary : .primary)
                     Text(event.wrappedValue.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ja_JP"))))
                         .foregroundStyle(.secondary)
                     if !event.wrappedValue.url.isEmpty {

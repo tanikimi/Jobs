@@ -7,12 +7,15 @@
 
 import Foundation
 
+
 struct Company: Identifiable, Codable, Hashable {
     var id = UUID()
+    var updatedAt: Date = Date.distantPast
     var name: String
     var status: Status
     var favoriteLevel: Int = 0
     var websiteURL: String
+    var links: [Link] = []
     var memo: String
     var events: [Event]
     
@@ -43,5 +46,12 @@ struct Company: Identifiable, Codable, Hashable {
         var title: String
         var date: Date
         var url: String = ""
+        var isCompleted: Bool = false
+    }
+    
+    struct Link: Identifiable, Codable, Hashable {
+        var id = UUID()
+        var title: String
+        var url: String
     }
 }

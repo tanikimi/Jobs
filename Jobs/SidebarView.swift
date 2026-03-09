@@ -17,7 +17,9 @@ struct SidebarView: View {
                 HStack {
                     Label("日時設定あり", systemImage: "calendar")
                     Spacer()
-                    badge(store.companies.filter { !$0.events.isEmpty }.count)
+                    badge(store.companies.filter { company in
+                        company.events.contains { !$0.isCompleted }
+                    }.count)
                 }
                 .tag(SidebarItem.hasEvents)
 

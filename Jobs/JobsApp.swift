@@ -1,10 +1,3 @@
-//
-//  JobsApp.swift
-//  Jobs
-//
-//  Created by 谷川 木穣 on 2026/03/07.
-//
-
 import SwiftUI
 
 @main
@@ -13,5 +6,17 @@ struct JobsApp: App {
         WindowGroup {
             ContentView()
         }
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("新規企業を追加") {
+                    NotificationCenter.default.post(name: .addCompany, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: .command)
+            }
+        }
     }
+}
+
+extension Notification.Name {
+    static let addCompany = Notification.Name("addCompany")
 }

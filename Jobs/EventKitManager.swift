@@ -11,14 +11,14 @@ class EventKitManager {
     }
 
     func requestAccess() async -> Bool {
-        print("現在の権限状態: \(EKEventStore.authorizationStatus(for: .event).rawValue)")
+        // print("現在の権限状態: \(EKEventStore.authorizationStatus(for: .event).rawValue)")
         do {
             let granted = try await store.requestWriteOnlyAccessToEvents()
-            print("権限リクエスト結果: \(granted)")
+            // print("権限リクエスト結果: \(granted)")
             authorizationStatus = EKEventStore.authorizationStatus(for: .event)
             return granted
         } catch {
-            print("カレンダーアクセス失敗: \(error)")
+            // print("カレンダーアクセス失敗: \(error)")
             return false
         }
     }
@@ -42,7 +42,7 @@ class EventKitManager {
             try store.save(ekEvent, span: .thisEvent)
             return true
         } catch {
-            print("イベント保存失敗: \(error)")
+            // print("イベント保存失敗: \(error)")
             return false
         }
     }
