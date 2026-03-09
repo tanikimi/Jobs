@@ -19,6 +19,25 @@ struct ContentView: View {
         }
     }
 
+    func addCompany() {
+        let defaultStatus: Company.Status
+        if case .status(let status) = sidebarSelection {
+            defaultStatus = status
+        } else {
+            defaultStatus = .interested
+        }
+        let newCompany = Company(
+            name: "",
+            status: defaultStatus,
+            websiteURL: "",
+            memo: "",
+            events: []
+        )
+        store.add(newCompany)
+        selectedCompany = newCompany
+        isNewCompany = true
+    }
+
     var body: some View {
         NavigationSplitView {
             SidebarView(selection: $sidebarSelection, store: store)
@@ -44,26 +63,7 @@ struct ContentView: View {
                     companies: filteredCompanies,
                     isGrouped: sidebarSelection == .hasEvents,
                     selectedCompany: $selectedCompany,
-                    onAdd: {
-                        // サイドバーの選択からデフォルトステータスを決定
-                        let defaultStatus: Company.Status
-                        if case .status(let status) = sidebarSelection {
-                            defaultStatus = status
-                        } else {
-                            defaultStatus = .interested
-                        }
-
-                        let newCompany = Company(
-                            name: "",
-                            status: defaultStatus,
-                            websiteURL: "",
-                            memo: "",
-                            events: []
-                        )
-                        store.add(newCompany)
-                        selectedCompany = newCompany
-                        isNewCompany = true
-                    },
+                    onAdd: addCompany,
                     onDelete: { company in
                         store.delete(company)
                         if selectedCompany == company {
@@ -83,13 +83,16 @@ struct ContentView: View {
                     systemImage: "person.text.rectangle.fill",
                     description: Text("就活の進捗情報を管理できます")
                 )
-                    .toolbar {
-                        ToolbarItem(placement: .primaryAction) {
-                            Button("編集") {}
-                                .disabled(true)
-                        }
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("編集") {}
+                            .disabled(true)
                     }
+                }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .addCompany)) { _ in
+            addCompany()
         }
     }
 }
