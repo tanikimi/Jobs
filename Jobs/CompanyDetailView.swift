@@ -56,9 +56,6 @@ struct CompanyDetailView: View {
         }
         .onAppear {
             previousURL = company.websiteURL
-            Task {
-                await store.fetchFavicon(for: company.websiteURL)
-            }
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
