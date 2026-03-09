@@ -1,20 +1,23 @@
 {
   "fill" : {
-    "automatic-gradient" : "display-p3:0.39857,0.33057,0.96783,1.00000"
+    "automatic-gradient" : "display-p3:1.00000,1.00000,1.00000,1.00000",
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
   },
   "groups" : [
     {
       "layers" : [
         {
-          "image-name" : "Image 3.png",
-          "name" : "Image 3",
-          "position" : {
-            "scale" : 1.2,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
+          "image-name" : "Image 7.svg",
+          "name" : "Image 7"
         }
       ],
       "shadow" : {
