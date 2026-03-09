@@ -84,12 +84,24 @@ class CompanyStore {
 
     private func save() {
         do {
+            // 保存前にバックアップを作成
+            if FileManager.default.fileExists(atPath: saveURL.path) {
+                let backupURL = URL.documentsDirectory.appending(path: "companies_backup.json")
+                try? FileManager.default.removeItem(at: backupURL)
+                try? FileManager.default.copyItem(at: saveURL, to: backupURL)
+            }
             let data = try JSONEncoder().encode(companies)
             try data.write(to: saveURL)
+
+            if FileManager.default.fileExists(atPath: trashURL.path) {
+                let backupTrashURL = URL.documentsDirectory.appending(path: "trashedCompanies_backup.json")
+                try? FileManager.default.removeItem(at: backupTrashURL)
+                try? FileManager.default.copyItem(at: trashURL, to: backupTrashURL)
+            }
             let trashData = try JSONEncoder().encode(trashedCompanies)
             try trashData.write(to: trashURL)
         } catch {
-            // print("保存失敗: \(error)")
+            print("保存失敗: \(error)")
         }
     }
 
