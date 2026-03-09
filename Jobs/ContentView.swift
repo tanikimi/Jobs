@@ -94,5 +94,6 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .addCompany)) { _ in
             addCompany()
         }
+        .environment(store)
     }
 }

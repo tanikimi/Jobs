@@ -6,6 +6,8 @@ struct CompanyDetailView: View {
     @FocusState private var isNameFocused: Bool
     @State private var eventKit = EventKitManager()
     @State private var addedEventIDs: Set<UUID> = []
+    @State private var previousURL: String = ""
+    @Environment(CompanyStore.self) private var store
 
     init(company: Binding<Company>, isEditing: Bool = false) {
         self._company = company
@@ -52,16 +54,29 @@ struct CompanyDetailView: View {
         .onChange(of: company.id) {
             isEditing = false
         }
+        .onAppear {
+            previousURL = company.websiteURL
+            Task {
+                await store.fetchFavicon(for: company.websiteURL)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(isEditing ? "完了" : "編集") {
                     if isEditing && company.name.trimmingCharacters(in: .whitespaces).isEmpty {
-                        // 名前が空なら何もせず編集モードを維持
                         isNameFocused = true
                     } else {
                         isEditing.toggle()
                         if isEditing {
                             isNameFocused = true
+                            previousURL = company.websiteURL
+                        } else {
+                            if previousURL != company.websiteURL {
+                                store.faviconCache.removeValue(forKey: previousURL)
+                                Task {
+                                    await store.fetchFavicon(for: company.websiteURL)
+                                }
+                            }
                         }
                     }
                 }
