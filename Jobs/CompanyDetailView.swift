@@ -128,6 +128,7 @@ struct CompanyDetailView: View {
                     Text(.init(company.memo))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 4)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
