@@ -98,13 +98,14 @@ class CompanyStore {
             let data = try Data(contentsOf: saveURL)
             companies = try JSONDecoder().decode([Company].self, from: data)
         } catch {
-            companies = []
+            // デコード失敗時は上書きしない
+            print("読み込み失敗: \(error)")
         }
         do {
             let trashData = try Data(contentsOf: trashURL)
             trashedCompanies = try JSONDecoder().decode([Company].self, from: trashData)
         } catch {
-            trashedCompanies = []
+            print("ゴミ箱読み込み失敗: \(error)")
         }
     }
 
