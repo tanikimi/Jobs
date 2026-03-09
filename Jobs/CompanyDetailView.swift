@@ -210,10 +210,20 @@ struct CompanyDetailView: View {
                 }
             }
         } else {
-            Section {
+            HStack(alignment: .center, spacing: 12) {
+                Button {
+                    event.wrappedValue.isCompleted.toggle()
+                } label: {
+                    Image(systemName: event.wrappedValue.isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.title2)
+                        .foregroundStyle(event.wrappedValue.isCompleted ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                }
+                .buttonStyle(.plain)
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(event.wrappedValue.title.isEmpty ? "タイトルなし" : event.wrappedValue.title)
                         .font(.headline)
+                        .foregroundStyle(event.wrappedValue.isCompleted ? .secondary : .primary)
                     Text(event.wrappedValue.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ja_JP"))))
                         .foregroundStyle(.secondary)
                     if !event.wrappedValue.url.isEmpty {

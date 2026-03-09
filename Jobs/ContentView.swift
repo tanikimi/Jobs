@@ -11,7 +11,9 @@ struct ContentView: View {
         case .all:
             return store.companies
         case .hasEvents:
-            return store.companies.filter { !$0.events.isEmpty }
+            return store.companies.filter { company in
+                company.events.contains { !$0.isCompleted }
+            }
         case .status(let status):
             return store.companies.filter { $0.status == status }
         case .trash:
@@ -69,7 +71,8 @@ struct ContentView: View {
                         if selectedCompany == company {
                             selectedCompany = nil
                         }
-                    }
+                    },
+                    sidebarSelection: sidebarSelection
                 )
             }
         } detail: {

@@ -46,6 +46,7 @@ struct Company: Identifiable, Codable, Hashable {
         var title: String
         var date: Date
         var url: String = ""
+        var isCompleted: Bool = false
     }
     
     struct Link: Identifiable, Codable, Hashable {

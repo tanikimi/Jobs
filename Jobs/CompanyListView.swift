@@ -6,20 +6,23 @@ struct CompanyListView: View {
     @Binding var selectedCompany: Company?
     let onAdd: () -> Void
     let onDelete: (Company) -> Void
+    let sidebarSelection: SidebarItem
     @State private var searchText = ""
-    @AppStorage("sortKeyRaw") private var sortKeyRaw: String = SortKey.name.rawValue
-    @AppStorage("sortAscending") private var sortAscending: Bool = true
+    @AppStorage("sortKeyRaw") private var sortKeyRaw: String = SortKey.updatedAt.rawValue
+    @AppStorage("sortAscending") private var sortAscending: Bool = false
+    
+
 
     enum SortKey: String, CaseIterable {
+        case updatedAt = "編集日時"
         case name      = "企業名"
         case favorite  = "志望度"
-        case updatedAt = "編集日時"
 
         var icon: String {
             switch self {
+            case .updatedAt: return "clock"
             case .name:      return "textformat"
             case .favorite:  return "star"
-            case .updatedAt: return "clock"
             }
         }
     }
@@ -37,12 +40,12 @@ struct CompanyListView: View {
             }
         }
         switch sortKey {
+        case .updatedAt:
+            result.sort { sortAscending ? $0.updatedAt < $1.updatedAt : $0.updatedAt > $1.updatedAt }
         case .name:
             result.sort { sortAscending ? $0.name < $1.name : $0.name > $1.name }
         case .favorite:
             result.sort { sortAscending ? $0.favoriteLevel < $1.favoriteLevel : $0.favoriteLevel > $1.favoriteLevel }
-        case .updatedAt:
-            result.sort { sortAscending ? $0.updatedAt < $1.updatedAt : $0.updatedAt > $1.updatedAt }
         }
         return result
     }
