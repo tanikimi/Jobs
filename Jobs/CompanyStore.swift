@@ -71,14 +71,14 @@ class CompanyStore {
               let faviconURL = URL(string: "https://www.google.com/s2/favicons?domain=\(host)&sz=256")
         else { return }
 
-        print("🌐 Favicon取得: \(url)")
+        // print("🌐 Favicon取得: \(url)")
         do {
             let (data, _) = try await URLSession.shared.data(from: faviconURL)
             if let loaded = NSImage(data: data) {
                 cacheFavicon(loaded, for: url)
             }
         } catch {
-            print("Favicon取得失敗: \(error)")
+            // print("Favicon取得失敗: \(error)")
         }
     }
 
@@ -89,7 +89,7 @@ class CompanyStore {
             let trashData = try JSONEncoder().encode(trashedCompanies)
             try trashData.write(to: trashURL)
         } catch {
-            print("保存失敗: \(error)")
+            // print("保存失敗: \(error)")
         }
     }
 
