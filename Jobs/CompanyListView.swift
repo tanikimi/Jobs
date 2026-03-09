@@ -7,8 +7,8 @@ struct CompanyListView: View {
     let onAdd: () -> Void
     let onDelete: (Company) -> Void
     @State private var searchText = ""
-    @State private var sortKey: SortKey = .name
-    @State private var sortAscending: Bool = true
+    @AppStorage("sortKeyRaw") private var sortKeyRaw: String = SortKey.name.rawValue
+    @AppStorage("sortAscending") private var sortAscending: Bool = true
 
     enum SortKey: String, CaseIterable {
         case name     = "企業名"
@@ -20,6 +20,11 @@ struct CompanyListView: View {
             case .favorite: return "star"
             }
         }
+    }
+
+    var sortKey: SortKey {
+        get { SortKey(rawValue: sortKeyRaw) ?? .name }
+        set { sortKeyRaw = newValue.rawValue }
     }
 
     var filteredCompanies: [Company] {
@@ -93,10 +98,10 @@ struct CompanyListView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
-                    Picker("並び替え", selection: $sortKey) {
+                    Picker("並び替え", selection: $sortKeyRaw) {
                         ForEach(SortKey.allCases, id: \.self) { key in
                             Label(key.rawValue, systemImage: key.icon)
-                                .tag(key)
+                                .tag(key.rawValue)
                         }
                     }
                     .pickerStyle(.inline)
