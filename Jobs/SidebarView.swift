@@ -3,10 +3,11 @@ import SwiftUI
 struct SidebarView: View {
     @Binding var selection: SidebarItem
     let store: CompanyStore
+    @State private var showingEmptyTrashConfirmation = false
 
     var body: some View {
         List(selection: $selection) {
-            Section("Jobs") {
+            Section("フィルタ") {
                 HStack {
                     Label("すべて", systemImage: "tray.2")
                     Spacer()
@@ -29,6 +30,14 @@ struct SidebarView: View {
                     badge(store.trashedCompanies.count)
                 }
                 .tag(SidebarItem.trash)
+                .contextMenu {
+                    Button(role: .destructive) {
+                        showingEmptyTrashConfirmation = true
+                    } label: {
+                        Label("すべて削除", systemImage: "trash.slash")
+                    }
+                    .disabled(store.trashedCompanies.isEmpty)
+                }
             }
 
             Section("ステータス") {
@@ -43,6 +52,14 @@ struct SidebarView: View {
             }
         }
         .navigationTitle("Jobs")
+        .confirmationDialog("\(store.trashedCompanies.count)件の項目を完全に削除してよろしいですか？", isPresented: $showingEmptyTrashConfirmation) {
+            Button("削除", role: .destructive) {
+                store.emptyTrash()
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("この操作は取り消せません。")
+        }
     }
 
     @ViewBuilder
