@@ -82,4 +82,13 @@ enum SidebarItem: Hashable {
     case hasEvents
     case status(Company.Status)
     case trash
+
+    var title: String {
+        switch self {
+        case .all:              return "すべて"
+        case .hasEvents:        return "日時設定あり"
+        case .status(let s):    return s.rawValue
+        case .trash:            return "最近削除した項目"
+        }
+    }
 }

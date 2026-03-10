@@ -86,7 +86,7 @@ struct CompanyListView: View {
         .id(isGrouped)
         .listStyle(.inset)
         .searchable(text: $searchText, prompt: "企業名で検索")
-        .navigationTitle("企業リスト")
+        .navigationTitle(sidebarSelection.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: onAdd) {
