@@ -6,7 +6,7 @@ struct CompanyDetailView: View {
     @FocusState private var isNameFocused: Bool
     @State private var eventKit = EventKitManager()
     @State private var addedEventIDs: Set<UUID> = []
-    @State private var previousURL: String = ""
+    @State private var previousCompany: Company? = nil
     @Environment(CompanyStore.self) private var store
 
     init(company: Binding<Company>, isEditing: Bool = false) {
@@ -55,7 +55,7 @@ struct CompanyDetailView: View {
             isEditing = false
         }
         .onAppear {
-            previousURL = company.websiteURL
+            previousCompany = company
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -66,13 +66,15 @@ struct CompanyDetailView: View {
                         isEditing.toggle()
                         if isEditing {
                             isNameFocused = true
-                            previousURL = company.websiteURL
+                            previousCompany = company
                         } else {
-                            company.updatedAt = Date.now
-                            if previousURL != company.websiteURL {
-                                store.faviconCache.removeValue(forKey: previousURL)
-                                Task {
-                                    await store.fetchFavicon(for: company.websiteURL)
+                            if let previous = previousCompany, previous != company {
+                                company.updatedAt = Date.now
+                                if previous.websiteURL != company.websiteURL {
+                                    store.faviconCache.removeValue(forKey: previous.websiteURL)
+                                    Task {
+                                        await store.fetchFavicon(for: company.websiteURL)
+                                    }
                                 }
                             }
                         }
@@ -213,6 +215,7 @@ struct CompanyDetailView: View {
             HStack(alignment: .center, spacing: 12) {
                 Button {
                     event.wrappedValue.isCompleted.toggle()
+                    company.updatedAt = Date.now
                 } label: {
                     Image(systemName: event.wrappedValue.isCompleted ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
