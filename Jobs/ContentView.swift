@@ -20,6 +20,16 @@ struct ContentView: View {
             return store.trashedCompanies
         }
     }
+    
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+
+    var colorScheme: ColorScheme? {
+        switch appearanceMode {
+        case "light": return .light
+        case "dark":  return .dark
+        default:      return nil
+        }
+    }
 
     func addCompany() {
         let defaultStatus: Company.Status
@@ -98,5 +108,6 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .addCompany)) { _ in
             addCompany()
         }
+        .preferredColorScheme(colorScheme)
     }
 }

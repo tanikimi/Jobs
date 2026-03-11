@@ -5,20 +5,24 @@ import Foundation
 class EventKitManager {
     private let store = EKEventStore()
     var authorizationStatus: EKAuthorizationStatus = .notDetermined
+    
+    var availableCalendars: [EKCalendar] {
+        guard authorizationStatus == .writeOnly || authorizationStatus == .fullAccess else {
+            return []
+        }
+        return store.calendars(for: .event)
+    }
 
     init() {
         authorizationStatus = EKEventStore.authorizationStatus(for: .event)
     }
 
     func requestAccess() async -> Bool {
-        // print("現在の権限状態: \(EKEventStore.authorizationStatus(for: .event).rawValue)")
         do {
-            let granted = try await store.requestWriteOnlyAccessToEvents()
-            // print("権限リクエスト結果: \(granted)")
+            let granted = try await store.requestFullAccessToEvents()
             authorizationStatus = EKEventStore.authorizationStatus(for: .event)
             return granted
         } catch {
-            // print("カレンダーアクセス失敗: \(error)")
             return false
         }
     }
@@ -33,7 +37,14 @@ class EventKitManager {
         let ekEvent = EKEvent(eventStore: store)
         ekEvent.title = "\(companyName) - \(event.title)"
         ekEvent.notes = event.url.isEmpty ? nil : event.url
-        ekEvent.calendar = store.defaultCalendarForNewEvents
+        
+        let calendarID = UserDefaults.standard.string(forKey: "selectedCalendarID") ?? ""
+        if !calendarID.isEmpty,
+           let selectedCalendar = store.calendar(withIdentifier: calendarID) {
+            ekEvent.calendar = selectedCalendar
+        } else {
+            ekEvent.calendar = store.defaultCalendarForNewEvents
+        }
 
         if let startTime = event.startTime {
             let calendar = Calendar.current

@@ -14,6 +14,10 @@ struct JobsApp: App {
                 .keyboardShortcut("n", modifiers: .command)
             }
         }
+
+        Settings {
+            SettingsView()
+        }
     }
 }
 
