@@ -7,6 +7,7 @@ struct CompanyDetailView: View {
     @State private var eventKit = EventKitManager()
     @State private var addedEventIDs: Set<UUID> = []
     @State private var previousCompany: Company? = nil
+    @State private var showingCalendarSuccess = false
     @Environment(CompanyStore.self) private var store
 
     init(company: Binding<Company>, isEditing: Bool = false) {
@@ -45,6 +46,11 @@ struct CompanyDetailView: View {
             }
         }
         .navigationTitle(company.name)
+        .alert("カレンダーに追加", isPresented: $showingCalendarSuccess) {
+            Button("OK") {}
+        } message: {
+            Text("日程をカレンダーに追加しました。")
+        }
         .task {
             if isEditing {
                 try? await Task.sleep(for: .milliseconds(100))
@@ -195,20 +201,49 @@ struct CompanyDetailView: View {
     @ViewBuilder
     private func eventRow(event: Binding<Company.Event>) -> some View {
         if isEditing {
-            Section {
-                TextField("イベント名", text: event.title)
-                    .multilineTextAlignment(.trailing)
-                    .contentShape(Rectangle())
-                DatePicker("日付", selection: event.date, displayedComponents: .date)
-                    .contentShape(Rectangle())
-                TextField("URL", text: event.url)
-                    .multilineTextAlignment(.trailing)
-                    .contentShape(Rectangle())
-                .contentShape(Rectangle())
-                Button(role: .destructive) {
-                    company.events.removeAll { $0.id == event.wrappedValue.id }
-                } label: {
-                    Label("日程を削除", systemImage: "trash")
+            if isEditing {
+                Section {
+                    TextField("イベント名", text: event.title)
+                        .multilineTextAlignment(.trailing)
+                        .contentShape(Rectangle())
+                    DatePicker("日付", selection: event.date, displayedComponents: .date)
+                        .contentShape(Rectangle())
+
+                    Toggle("時刻", isOn: Binding(
+                        get: { event.wrappedValue.startTime != nil },
+                        set: {
+                            if $0 {
+                                var components = Calendar.current.dateComponents([.year, .month, .day], from: event.wrappedValue.date)
+                                components.hour = 0
+                                components.minute = 0
+                                event.wrappedValue.startTime = Calendar.current.date(from: components)
+                                event.wrappedValue.endTime = Calendar.current.date(from: components)
+                            } else {
+                                event.wrappedValue.startTime = nil
+                                event.wrappedValue.endTime = nil
+                            }
+                        }
+                    ))
+                    if event.wrappedValue.startTime != nil {
+                        DatePicker("開始時間", selection: Binding(
+                            get: { event.wrappedValue.startTime ?? event.wrappedValue.date },
+                            set: { event.wrappedValue.startTime = $0 }
+                        ), displayedComponents: .hourAndMinute)
+                        DatePicker("終了時間", selection: Binding(
+                            get: { event.wrappedValue.endTime ?? event.wrappedValue.startTime ?? event.wrappedValue.date },
+                            set: { event.wrappedValue.endTime = $0 }
+                        ), in: (event.wrappedValue.startTime ?? event.wrappedValue.date)...,
+                           displayedComponents: .hourAndMinute)
+                    }
+
+                    TextField("URL", text: event.url)
+                        .multilineTextAlignment(.trailing)
+                        .contentShape(Rectangle())
+                    Button(role: .destructive) {
+                        company.events.removeAll { $0.id == event.wrappedValue.id }
+                    } label: {
+                        Label("日程を削除", systemImage: "trash")
+                    }
                 }
             }
         } else {
@@ -227,8 +262,17 @@ struct CompanyDetailView: View {
                     Text(event.wrappedValue.title.isEmpty ? "タイトルなし" : event.wrappedValue.title)
                         .font(.headline)
                         .foregroundStyle(event.wrappedValue.isCompleted ? .secondary : .primary)
-                    Text(event.wrappedValue.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ja_JP"))))
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Text(event.wrappedValue.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ja_JP"))))
+                        if let start = event.wrappedValue.startTime {
+                            Text(start.formatted(.dateTime.hour().minute()))
+                            if let end = event.wrappedValue.endTime {
+                                Text("〜")
+                                Text(end.formatted(.dateTime.hour().minute()))
+                            }
+                        }
+                    }
+                    .foregroundStyle(.secondary)
                     if !event.wrappedValue.url.isEmpty {
                         if let url = URL(string: event.wrappedValue.url) {
                             Link(event.wrappedValue.url, destination: url)
@@ -245,6 +289,7 @@ struct CompanyDetailView: View {
                             let success = await eventKit.addEvent(event: event.wrappedValue, companyName: company.name)
                             if success {
                                 addedEventIDs.insert(event.wrappedValue.id)
+                                showingCalendarSuccess = true
                             }
                         }
                     } label: {
