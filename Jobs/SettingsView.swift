@@ -1,6 +1,7 @@
 import SwiftUI
 import EventKit
 import AppKit
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     var body: some View {
@@ -91,10 +92,19 @@ struct GeneralSettingsView: View {
 struct AdvancedSettingsView: View {
     @State private var showingExportSuccess = false
     @State private var showingExportError = false
+    @State private var showingImportConfirmation = false
+    @State private var showingImportSuccess = false
+    @State private var showingImportError = false
+    @State private var importURL: URL? = nil
 
     var body: some View {
         Form {
             Section("データ") {
+                LabeledContent("企業情報をインポート") {
+                    Button("\"ダウンロード\" からインポート") {
+                        importJSON()
+                    }
+                }
                 LabeledContent("企業情報をエクスポート") {
                     Button("\"ダウンロード\" にエクスポート") {
                         exportJSON()
@@ -103,10 +113,32 @@ struct AdvancedSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        
+        .alert("インポートしますか？", isPresented: $showingImportConfirmation) {
+            Button("インポート", role: .destructive) {
+                if let url = importURL {
+                    performImport(from: url)
+                }
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("既存のデータは上書きされます。この操作は取り消せません。")
+        }
+        .alert("インポート完了", isPresented: $showingImportSuccess) {
+            Button("OK") {}
+        } message: {
+            Text("データは正常にインポートされました。アプリを再起動すると反映されます。")
+        }
+        .alert("インポート失敗", isPresented: $showingImportError) {
+            Button("OK") {}
+        } message: {
+            Text("インポートに失敗しました。正しいファイルか確認してください。")
+        }
+        
         .alert("エクスポート完了", isPresented: $showingExportSuccess) {
             Button("OK") {}
         } message: {
-            Text("companies.json は正常に \"ダウンロード\" にエクスポートされました。")
+            Text("データは正常に \"ダウンロード\" にエクスポートされました。")
         }
         .alert("エクスポート失敗", isPresented: $showingExportError) {
             Button("OK") {}
@@ -129,6 +161,34 @@ struct AdvancedSettingsView: View {
         } catch {
             print("エクスポート失敗: \(error)")
             showingExportError = true
+        }
+    }
+
+    private func importJSON() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [.json]
+        openPanel.allowsMultipleSelection = false
+        openPanel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+
+        if openPanel.runModal() == .OK, let url = openPanel.url {
+            importURL = url
+            showingImportConfirmation = true
+        }
+    }
+
+    private func performImport(from url: URL) {
+        let destinationURL = URL.documentsDirectory.appending(path: "companies.json")
+        do {
+            let data = try Data(contentsOf: url)
+            _ = try JSONDecoder().decode([Company].self, from: data)
+            let backupURL = URL.documentsDirectory.appending(path: "companies_backup.json")
+            try? FileManager.default.removeItem(at: backupURL)
+            try? FileManager.default.copyItem(at: destinationURL, to: backupURL)
+            try data.write(to: destinationURL)
+            showingImportSuccess = true
+        } catch {
+            print("インポート失敗: \(error)")
+            showingImportError = true
         }
     }
 }
