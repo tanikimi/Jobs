@@ -35,8 +35,12 @@ struct CompanyListView: View {
     var filteredCompanies: [Company] {
         var result = companies
         if !searchText.isEmpty {
-            result = result.filter {
-                $0.name.localizedStandardContains(searchText)
+            result = result.filter { company in
+                company.name.localizedStandardContains(searchText) ||
+                company.memo.localizedStandardContains(searchText) ||
+                company.events.contains { event in
+                    event.title.localizedStandardContains(searchText)
+                }
             }
         }
         switch sortKey {
@@ -85,7 +89,7 @@ struct CompanyListView: View {
         }
         .id(isGrouped)
         .listStyle(.inset)
-        .searchable(text: $searchText, prompt: "企業名で検索")
+        .searchable(text: $searchText, prompt: "検索")
         .navigationTitle(sidebarSelection.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
