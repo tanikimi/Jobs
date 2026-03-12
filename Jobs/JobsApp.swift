@@ -2,6 +2,15 @@ import SwiftUI
 
 @main
 struct JobsApp: App {
+    @AppStorage("selectedIconName") private var selectedIconName: String = "AppIcon"
+
+    init() {
+        let iconName = UserDefaults.standard.string(forKey: "selectedIconName") ?? "AppIcon"
+        if let image = NSImage(named: iconName) {
+            NSApplication.shared.applicationIconImage = image
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
