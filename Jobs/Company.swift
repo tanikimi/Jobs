@@ -45,6 +45,8 @@ struct Company: Identifiable, Codable, Hashable {
         var id = UUID()
         var title: String
         var date: Date
+        var startTime: Date? = nil
+        var endTime: Date? = nil
         var url: String = ""
         var isCompleted: Bool = false
     }

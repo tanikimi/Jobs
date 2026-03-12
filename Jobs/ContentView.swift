@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var store = CompanyStore()
     @State private var sidebarSelection: SidebarItem = .all
-    @State private var selectedCompany: Company?
+    @State private var selectedCompanies: Set<Company> = []
     @State private var isNewCompany = false
 
     var filteredCompanies: [Company] {
@@ -18,6 +18,16 @@ struct ContentView: View {
             return store.companies.filter { $0.status == status }
         case .trash:
             return store.trashedCompanies
+        }
+    }
+    
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+
+    var colorScheme: ColorScheme? {
+        switch appearanceMode {
+        case "light": return .light
+        case "dark":  return .dark
+        default:      return nil
         }
     }
 
@@ -36,7 +46,7 @@ struct ContentView: View {
             events: []
         )
         store.add(newCompany)
-        selectedCompany = newCompany
+        selectedCompanies = [newCompany]
         isNewCompany = true
     }
 
@@ -49,37 +59,37 @@ struct ContentView: View {
                     companies: store.trashedCompanies,
                     onRestore: { company in
                         store.restore(company)
-                        selectedCompany = nil
+                        selectedCompanies = []
                     },
                     onDeletePermanently: { company in
                         store.deletePermanently(company)
-                        selectedCompany = nil
+                        selectedCompanies = []
                     },
                     onEmptyTrash: {
                         store.emptyTrash()
-                        selectedCompany = nil
+                        selectedCompanies = []
                     }
                 )
             } else {
                 CompanyListView(
                     companies: filteredCompanies,
                     isGrouped: sidebarSelection == .hasEvents,
-                    selectedCompany: $selectedCompany,
+                    selectedCompanies: $selectedCompanies,
                     onAdd: addCompany,
                     onDelete: { company in
                         store.delete(company)
-                        if selectedCompany == company {
-                            selectedCompany = nil
-                        }
+                        selectedCompanies.remove(company)
                     },
                     sidebarSelection: sidebarSelection
                 )
             }
         } detail: {
-            if let index = store.companies.firstIndex(where: { $0.id == selectedCompany?.id }) {
+            if let company = selectedCompanies.first,
+               selectedCompanies.count == 1,
+               let index = store.companies.firstIndex(where: { $0.id == company.id }) {
                 CompanyDetailView(company: $store.companies[index], isEditing: isNewCompany)
                     .onAppear { isNewCompany = false }
-                    .id(selectedCompany?.id)
+                    .id(company.id)
             } else {
                 ContentUnavailableView(
                     "選択された項目なし",
@@ -94,9 +104,10 @@ struct ContentView: View {
                 }
             }
         }
+        .environment(store)
         .onReceive(NotificationCenter.default.publisher(for: .addCompany)) { _ in
             addCompany()
         }
-        .environment(store)
+        .preferredColorScheme(colorScheme)
     }
 }

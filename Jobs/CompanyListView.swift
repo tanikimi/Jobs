@@ -3,7 +3,7 @@ import SwiftUI
 struct CompanyListView: View {
     let companies: [Company]
     let isGrouped: Bool
-    @Binding var selectedCompany: Company?
+    @Binding var selectedCompanies: Set<Company>
     let onAdd: () -> Void
     let onDelete: (Company) -> Void
     let sidebarSelection: SidebarItem
@@ -35,8 +35,12 @@ struct CompanyListView: View {
     var filteredCompanies: [Company] {
         var result = companies
         if !searchText.isEmpty {
-            result = result.filter {
-                $0.name.localizedStandardContains(searchText)
+            result = result.filter { company in
+                company.name.localizedStandardContains(searchText) ||
+                company.memo.localizedStandardContains(searchText) ||
+                company.events.contains { event in
+                    event.title.localizedStandardContains(searchText)
+                }
             }
         }
         switch sortKey {
@@ -64,7 +68,7 @@ struct CompanyListView: View {
     }
 
     var body: some View {
-        List(selection: $selectedCompany) {
+        List(selection: $selectedCompanies) {
             if isGrouped {
                 ForEach(Array(groupedCompanies.enumerated()), id: \.element.date) { groupIndex, group in
                     Section {
@@ -85,23 +89,13 @@ struct CompanyListView: View {
         }
         .id(isGrouped)
         .listStyle(.inset)
-        .searchable(text: $searchText, prompt: "企業名で検索")
-        .navigationTitle("企業リスト")
+        .searchable(text: $searchText, prompt: "検索")
+        .navigationTitle(sidebarSelection.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: onAdd) {
                     Label("追加", systemImage: "plus")
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button(role: .destructive) {
-                    if let company = selectedCompany {
-                        onDelete(company)
-                    }
-                } label: {
-                    Label("削除", systemImage: "trash")
-                }
-                .disabled(selectedCompany == nil)
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
@@ -135,13 +129,27 @@ struct CompanyListView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(company.name)
                     .font(.headline)
-                Text(company.status.rawValue)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if case .status = sidebarSelection {
+                } else {
+                    Text(company.status.rawValue)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding(.vertical, 6)
         .tag(company)
+        .contextMenu {
+            Button(role: .destructive) {
+                if selectedCompanies.contains(company) {
+                    selectedCompanies.forEach { onDelete($0) }
+                } else {
+                    onDelete(company)
+                }
+            } label: {
+                Label("削除", systemImage: "trash")
+            }
+        }
         .swipeActions {
             Button(role: .destructive) {
                 onDelete(company)

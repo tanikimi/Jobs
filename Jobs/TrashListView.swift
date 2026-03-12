@@ -1,6 +1,8 @@
 import SwiftUI
 
+
 struct TrashListView: View {
+    @State private var showingEmptyTrashConfirmation = false
     let companies: [Company]
     let onRestore: (Company) -> Void
     let onDeletePermanently: (Company) -> Void
@@ -38,13 +40,23 @@ struct TrashListView: View {
                 }
             }
         }
-        .navigationTitle("ゴミ箱")
+        .navigationTitle("最近削除した項目")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("ゴミ箱を空にする") {
-                    onEmptyTrash()
+                Button(role: .destructive) {
+                    showingEmptyTrashConfirmation = true
+                } label: {
+                    Text("すべて削除")
                 }
                 .disabled(companies.isEmpty)
+                .confirmationDialog("\(companies.count)件の項目を完全に削除してよろしいですか？", isPresented: $showingEmptyTrashConfirmation) {
+                    Button("削除", role: .destructive) {
+                        onEmptyTrash()
+                    }
+                    Button("キャンセル", role: .cancel) {}
+                } message: {
+                    Text("この操作は取り消せません。")
+                }
             }
         }
     }
