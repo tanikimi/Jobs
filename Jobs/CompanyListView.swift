@@ -54,16 +54,16 @@ struct CompanyListView: View {
         return result
     }
 
-    var groupedCompanies: [(date: Date, companies: [Company])] {
-        var dict: [Date: [Company]] = [:]
+    var groupedCompanies: [(date: Date, items: [(company: Company, event: Company.Event)])] {
+        var dict: [Date: [(company: Company, event: Company.Event)]] = [:]
         for company in filteredCompanies {
             for event in company.events where !event.isCompleted {
                 let day = Calendar.current.startOfDay(for: event.date)
-                dict[day, default: []].append(company)
+                dict[day, default: []].append((company: company, event: event))
             }
         }
         return dict
-            .map { (date: $0.key, companies: $0.value) }
+            .map { (date: $0.key, items: $0.value) }
             .sorted { $0.date < $1.date }
     }
 
@@ -72,8 +72,8 @@ struct CompanyListView: View {
             if isGrouped {
                 ForEach(Array(groupedCompanies.enumerated()), id: \.element.date) { groupIndex, group in
                     Section {
-                        ForEach(Array(group.companies.enumerated()), id: \.element.id) { index, company in
-                            companyRow(company)
+                        ForEach(Array(group.items.enumerated()), id: \.element.event.id) { index, item in
+                            eventRow(company: item.company, event: item.event)
                                 .listRowSeparator(.hidden)
                         }
                     } header: {
@@ -157,5 +157,44 @@ struct CompanyListView: View {
                 Image(systemName: "trash")
             }
         }
+    }
+    
+    @ViewBuilder
+    private func eventRow(company: Company, event: Company.Event) -> some View {
+        HStack(spacing: 12) {
+            FaviconView(websiteURL: company.websiteURL)
+                .id(company.websiteURL)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(event.title.isEmpty ? "タイトルなし" : event.title)
+                    .font(.headline)
+                HStack(spacing: 4) {
+                    if let start = event.startTime {
+                        Image(systemName: "clock")
+                            .font(.caption)
+                        Text(start.formatted(.dateTime.hour().minute()))
+                            .font(.caption)
+                            .fixedSize()
+                        if let end = event.endTime {
+                            Text("〜")
+                                .font(.caption)
+                                .fixedSize()
+                            Text(end.formatted(.dateTime.hour().minute()))
+                                .font(.caption)
+                                .fixedSize()
+                        }
+                        Text("·")
+                            .font(.caption)
+                            .fixedSize()
+                    }
+                    Text(company.name)
+                        .font(.caption)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 6)
+        .tag(company)
     }
 }
