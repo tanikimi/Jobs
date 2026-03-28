@@ -57,7 +57,7 @@ struct CompanyListView: View {
     var groupedCompanies: [(date: Date, companies: [Company])] {
         var dict: [Date: [Company]] = [:]
         for company in filteredCompanies {
-            for event in company.events {
+            for event in company.events where !event.isCompleted {
                 let day = Calendar.current.startOfDay(for: event.date)
                 dict[day, default: []].append(company)
             }
