@@ -17,7 +17,7 @@ struct Company: Identifiable, Codable, Hashable {
     var websiteURL: String
     var links: [Link] = []
     var memo: String
-    var entrySheet: String = ""
+    var entrySheets: [EntrySheetItem] = []
     var events: [Event]
     
     //  選考ステータス
@@ -56,5 +56,11 @@ struct Company: Identifiable, Codable, Hashable {
         var id = UUID()
         var title: String
         var url: String
+    }
+    
+    struct EntrySheetItem: Identifiable, Codable, Hashable {
+        var id = UUID()
+        var title: String = ""
+        var text: String = ""
     }
 }

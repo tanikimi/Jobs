@@ -336,7 +336,7 @@ struct CompanyDetailView: View {
                 // ★修正: 新しいウィンドウをID指定で開く
                 openWindow(id: "entry-sheet", value: company.id)
             } label: {
-                Label("別ウィンドウでESを編集", systemImage: "macwindow.badge.plus")
+                Label("新しいウィンドウでESを開く", systemImage: "macwindow.badge.plus")
             }
             .buttonStyle(.plain)
             .foregroundStyle(Color.accentColor)
