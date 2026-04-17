@@ -9,6 +9,7 @@ struct CompanyDetailView: View {
     @State private var previousCompany: Company? = nil
     @State private var showingCalendarSuccess = false
     @Environment(CompanyStore.self) private var store
+    @Environment(\.openWindow) private var openWindow
 
     init(company: Binding<Company>, isEditing: Bool = false) {
         self._company = company
@@ -41,6 +42,7 @@ struct CompanyDetailView: View {
                     basicInfoSection()
                     linksSection()
                     scheduleSection()
+                    entrySheetSection()
                 }
                 .formStyle(.grouped)
             }
@@ -324,6 +326,20 @@ struct CompanyDetailView: View {
             } label: {
                 Label("日程を追加", systemImage: "plus")
             }
+        }
+    }
+
+    @ViewBuilder
+    private func entrySheetSection() -> some View {
+        Section("エントリーシート") {
+            Button {
+                // ★修正: 新しいウィンドウをID指定で開く
+                openWindow(id: "entry-sheet", value: company.id)
+            } label: {
+                Label("別ウィンドウでESを編集", systemImage: "macwindow.badge.plus")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.accentColor)
         }
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct JobsApp: App {
+    @State private var store = CompanyStore()
     @AppStorage("selectedIconName") private var selectedIconName: String = "AppIcon"
 
     init() {
@@ -14,6 +15,7 @@ struct JobsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(store)
         }
         .commands {
             CommandGroup(replacing: .newItem) {
@@ -23,6 +25,13 @@ struct JobsApp: App {
                 .keyboardShortcut("n", modifiers: .command)
             }
         }
+        WindowGroup("エントリーシート", id: "entry-sheet", for: UUID.self) { $companyID in
+            if let id = companyID {
+                EntrySheetView(companyID: id)
+                    .environment(store)
+            }
+        }
+        .windowResizability(.contentSize) // 内容に合わせてサイズ変更可能に
 
         Settings {
             SettingsView()

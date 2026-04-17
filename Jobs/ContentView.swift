@@ -43,7 +43,8 @@ struct ContentView: View {
             status: defaultStatus,
             websiteURL: "",
             memo: "",
-            events: []
+            entrySheet: "",
+            events: [],
         )
         store.add(newCompany)
         selectedCompanies = [newCompany]

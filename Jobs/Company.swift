@@ -17,6 +17,7 @@ struct Company: Identifiable, Codable, Hashable {
     var websiteURL: String
     var links: [Link] = []
     var memo: String
+    var entrySheet: String = ""
     var events: [Event]
     
     //  選考ステータス
