@@ -18,10 +18,10 @@ struct EntrySheetView: View {
                             ZStack(alignment: .topLeading) {
                                 // プレースホルダー（透かし文字）を自作して重ねる
                                 if item.title.isEmpty {
-                                    Text("設問タイトル (例: 志望理由)")
+                                    Text("項目")
                                         .font(.title3.bold())
                                         .foregroundStyle(.tertiary)
-//                                        .padding(.leading, 4)
+                                        .padding(.leading, 4)
                                         .padding(.top, 2)
                                         .allowsHitTesting(false) // クリックを下のTextEditorに貫通させる
                                 }
@@ -31,6 +31,7 @@ struct EntrySheetView: View {
                                     .frame(height: 18)
                                     .scrollContentBackground(.hidden)
                                     .background(Color.clear)
+                                    .scrollDisabled(true)
                             }
                             // エンターキーによる改行を無効化し、1行の入力欄として振る舞わせる
                             .onChange(of: item.title) { _, newValue in
