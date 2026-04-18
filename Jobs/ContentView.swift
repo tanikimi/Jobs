@@ -9,7 +9,11 @@ struct ContentView: View {
     var filteredCompanies: [Company] {
         switch sidebarSelection {
         case .all:
-            return store.companies
+            if hideInactiveCompaniesInAll {
+                return store.companies.filter { $0.status != .rejected && $0.status != .declined }
+            } else {
+                return store.companies
+            }
         case .hasEvents:
             return store.companies.filter { company in
                 company.events.contains { !$0.isCompleted }
@@ -21,6 +25,7 @@ struct ContentView: View {
         }
     }
     
+    @AppStorage("hideInactiveCompaniesInAll") private var hideInactiveCompaniesInAll: Bool = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
 
     var colorScheme: ColorScheme? {

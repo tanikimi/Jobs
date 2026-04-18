@@ -23,6 +23,7 @@ struct GeneralSettingsView: View {
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @AppStorage("selectedCalendarID") private var selectedCalendarID: String = ""
     @AppStorage("selectedIconName") private var selectedIconName: String = "AppIcon"
+    @AppStorage("hideInactiveCompaniesInAll") private var hideInactiveCompaniesInAll: Bool = false
     @State private var eventKit = EventKitManager()
 
     let icons: [String] = ["AppIcon", "AppIcon2", "AppIcon3", "AppIcon4", "AppIcon5"]
@@ -66,6 +67,10 @@ struct GeneralSettingsView: View {
                     }
                 }
                 .padding(.vertical, 4)
+            }
+            
+            Section("リスト表示") {
+                Toggle("「すべて」で不合格・辞退した企業を非表示にする", isOn: $hideInactiveCompaniesInAll)
             }
 
             Section("カレンダー") {
