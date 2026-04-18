@@ -4,6 +4,8 @@ struct SidebarView: View {
     @Binding var selection: SidebarItem
     let store: CompanyStore
     @State private var showingEmptyTrashConfirmation = false
+    
+    @AppStorage("hideInactiveCompaniesInAll") private var hideInactiveCompaniesInAll: Bool = false
 
     var body: some View {
         List(selection: $selection) {
@@ -11,7 +13,10 @@ struct SidebarView: View {
                 HStack {
                     Label("すべて", systemImage: "tray.2")
                     Spacer()
-                    badge(store.companies.count)
+                    let allCount = hideInactiveCompaniesInAll
+                        ? store.companies.filter { $0.status != .rejected && $0.status != .declined }.count
+                        : store.companies.count
+                    badge(allCount)
                 }
                 .tag(SidebarItem.all)
 
