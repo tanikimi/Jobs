@@ -78,6 +78,9 @@ struct CompanyDetailView: View {
                         } else {
                             if let previous = previousCompany, previous != company {
                                 company.updatedAt = Date.now
+                                if company.status == .offered && previous.status != .offered {
+                                    NotificationCenter.default.post(name: .showConfetti, object: nil)
+                                }
                                 if previous.websiteURL != company.websiteURL {
                                     store.faviconCache.removeValue(forKey: previous.websiteURL)
                                     Task {

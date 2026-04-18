@@ -41,4 +41,5 @@ struct JobsApp: App {
 
 extension Notification.Name {
     static let addCompany = Notification.Name("addCompany")
+    static let showConfetti = Notification.Name("showConfetti")
 }

@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var sidebarSelection: SidebarItem = .all
     @State private var selectedCompanies: Set<Company> = []
     @State private var isNewCompany = false
+    @State private var showConfetti = false
 
     var filteredCompanies: [Company] {
         switch sidebarSelection {
@@ -113,6 +114,20 @@ struct ContentView: View {
         .environment(store)
         .onReceive(NotificationCenter.default.publisher(for: .addCompany)) { _ in
             addCompany()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showConfetti)) { _ in
+            showConfetti = true
+            // 4秒後に自動で消す
+            DispatchQueue.main.asyncAfter(deadline: .now() + 7.0) {
+                showConfetti = false
+            }
+        }
+        // ウィンドウの一番手前に紙吹雪を置く
+        .overlay {
+            if showConfetti {
+                ConfettiView()
+                    .ignoresSafeArea() // ウィンドウ全体に広げる
+            }
         }
         .preferredColorScheme(colorScheme)
     }
